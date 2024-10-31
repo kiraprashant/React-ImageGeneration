@@ -2,8 +2,14 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
-import Modal from 'react-modal';
-
+import Modal from "react-modal";
+import Button from "@mui/material/Button";
+import TextField from "@mui/material/TextField";
+import Select from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
+import InputLabel from "@mui/material/InputLabel";
+import FormControl from "@mui/material/FormControl";
+import Typography from "@mui/material/Typography";
 
 const GenerateImage = () => {
   const [field, setfield] = useState("");
@@ -11,7 +17,7 @@ const GenerateImage = () => {
   const [isLoading, setisLoading] = useState(false);
   const [dBlock, setdBlock] = useState("none");
   const [modalIsOpen, setIsOpen] = React.useState(false);
-  const [SaveImage,setSaveImage] = useState(false)
+  const [SaveImage, setSaveImage] = useState(false);
   const [selectModel, setseletModel] = useState([
     {
       modelid:
@@ -31,27 +37,26 @@ const GenerateImage = () => {
     },
   ]);
 
-  const [selectedModel, setselectedModel] = useState(
-    {
-     modelid:"https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0",
-     Name:"stable-diffusion-xl-base"
-    } 
-    );
+  const [selectedModel, setselectedModel] = useState({
+    modelid:
+      "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0",
+    Name: "stable-diffusion-xl-base",
+  });
 
-    useEffect(() => {
-      if (selectedModel) {
-        console.log("Updated selectedModel:", selectedModel);
-      }
-    }, [selectedModel]);
+  useEffect(() => {
+    if (selectedModel) {
+      console.log("Updated selectedModel:", selectedModel);
+    }
+  }, [selectedModel]);
 
   const customStyles = {
     content: {
-      top: '50%',
-      left: '50%',
-      right: 'auto',
-      bottom: 'auto',
-      marginRight: '-50%',
-      transform: 'translate(-50%, -50%)',
+      top: "50%",
+      left: "50%",
+      right: "auto",
+      bottom: "auto",
+      marginRight: "-50%",
+      transform: "translate(-50%, -50%)",
     },
   };
 
@@ -63,7 +68,7 @@ const GenerateImage = () => {
     setIsOpen(false);
   }
 
-   function query(data,datamodel) {
+  function query(data, datamodel) {
     console.log("///////", selectedModel.modelid);
     if (!data) {
       return false;
@@ -75,7 +80,7 @@ const GenerateImage = () => {
 
     console.log("l,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,", data);
     setisLoading(true);
-    setSaveImage(false)
+    setSaveImage(false);
     setdBlock("block");
 
     axios
@@ -97,12 +102,33 @@ const GenerateImage = () => {
         console.log(Image);
         setImage(Image);
         setisLoading(false);
-        
       })
       .catch((e) => {
         console.log(e);
         setisLoading(false);
       });
+  }
+
+  const savetodatabase = async(data) =>{
+    console.log("////////",data)
+    axios
+    .post("http://localhost:4000/SaveImage", data)
+    .then((res) => {
+      console.log(res);
+      setIsOpen(true);
+      // setisLoading(true)
+      setSaveImage(true);
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+try{
+   const getdata = await axios.post("http://localhost:4000/SaveImage",data)
+   console.log(getdata)
+}
+catch(e){
+  console.log(e)
+}
   }
 
   const SavingImage = async () => {
@@ -127,49 +153,83 @@ const GenerateImage = () => {
       ImageDetail: formData,
     };
 
-    axios
-      .post("http://localhost:4000/SaveImage", formData, {
-      })
-      .then((res) => {
-        console.log(res);
-        setIsOpen(true)
-        // setisLoading(true)
-        setSaveImage(true)
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+    const FormdataCloud = new FormData()
+    FormdataCloud.append("file",blob)
+    FormdataCloud.append("fileName","prashantnair1999@gmail.com.png")
+    FormdataCloud.append("folder","GenerativeImage")
+
+    console.log(FormdataCloud)
+   
+
+    axios.post("https://upload.imagekit.io/api/v1/files/upload",FormdataCloud,{
+      auth: {
+        username: `private_9ZnE/MMSir0NvajqPU3b0dTosn4=`,
+        password: ``,
+      },
+    }).then((res)=>{
+       console.log(res)
+       FormdataCloud.append("ImagePath",res.data.url)
+       const data = {
+        Username:"prashant",
+        Email:"prashantnair@gmail.com",
+        ImagePath:res.data.url,
+        Model:selectedModel.Name,
+        Prompt:field
+      }
+
+      savetodatabase(data)
+
+    }).catch((e)=>{
+       console.log(e)
+    })
+
+    // axios
+    //   .post("http://localhost:4000/SaveImage", formData, {})
+    //   .then((res) => {
+    //     console.log(res);
+    //     setIsOpen(true);
+    //     // setisLoading(true)
+    //     setSaveImage(true);
+    //   })
+    //   .catch((err) => {
+    //     console.log(err);
+    //   });
 
     console.log(dataToServer);
   };
 
   const handlechange = (e) => {
-    const selectedObj = selectModel.find(option => option.modelid === e.target.value);
+    const selectedObj = selectModel.find(
+      (option) => option.modelid === e.target.value
+    );
     setselectedModel(selectedObj);
     console.log(selectedModel);
   };
 
   return (
     <div className="container">
-
-      <h1 className="mb-4">Image Generation</h1>
-      <p className="mb-4">
-       "A modern, visually captivating
-        image featuring a sleek, minimalist design that perfectly blends with
-        the website's overall aesthetic. The background is a smooth gradient of
-        soft pastel colors, transitioning seamlessly from a light sky blue at
-        the top to a warm peach at the bottom. In the center, a stylish and
-        elegant element stands out—whether it's a product, logo, or artistic
-        illustration—bathed in soft lighting that creates a subtle yet striking
-        shadow. The image exudes a sense of professionalism and creativity,
-        drawing attention without overwhelming the viewer."
-      </p>
+      <Typography variant="h3">
+        Image Generation
+      </Typography>
+      <Typography variant="body1" gutterBottom className="mb-4">
+        A modern, visually captivating image featuring a sleek, minimalist
+        design that perfectly blends with the website's overall aesthetic. The
+        background is a smooth gradient of soft pastel colors, transitioning
+        seamlessly from a light sky blue at the top to a warm peach at the
+        bottom. In the center, a stylish and elegant element stands out—whether
+        it's a product, logo, or artistic illustration—bathed in soft lighting
+        that creates a subtle yet striking shadow. The image exudes a sense of
+        professionalism and creativity, drawing attention without overwhelming
+        the viewer.
+      </Typography>
+      
+      
 
       <div
         style={{ display: "flex", flexDirection: "column" }}
         className="mb-4"
       >
-        <select
+        {/* <select
           className="mb-1 form-control"
           // value={selectedModel.modelid}
           onChange={(e) => handlechange(e)}
@@ -177,28 +237,57 @@ const GenerateImage = () => {
           {selectModel.map((elem) => (
             <option value={elem.modelid}>{elem.Name}</option>
           ))}
-        </select>
+        </select> */}
+        <FormControl fullWidth>
+          <InputLabel id="demo-simple-model-select-label">Model</InputLabel>
+          <Select
+            labelId="demo-simple-model-select-label"
+            id="demo-simple-select"
+            value={selectedModel.modelid}
+            label="Age"
+            onChange={(e) => handlechange(e)}
+            size="small"
+          >
+            {selectModel.map((elem) => (
+              <MenuItem value={elem.modelid}>{elem.Name}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
       </div>
-      <div
-        style={{ display: "flex", justifyContent: "space-between" }}
-        className="mb-4"
-      >
-        <input
+      <div style={{ justifyContent: "space-between" }} className="mb-4">
+        {/* <input
           style={{ width: "85%" }}
           className="form-control"
           type="text"
           value={field}
           onChange={(e) => setfield(e.target.value)}
           placeholder="give me prompt to generate the image"
+        /> */}
+        <TextField
+          fullWidth
+          label="Prompt"
+          id="fullWidth"
+          value={field}
+          size="small"
+          onChange={(e) => setfield(e.target.value)}
+          className="mb-4"
         />
-        <button
+
+        {/* <button
           onClick={() => query(field,selectedModel)}
           style={{ width: "150px" }}
           type="button"
           className="btn btn-primary"
         >
           Generate
-        </button>
+        </button> */}
+        <Button
+          onClick={() => query(field, selectedModel)}
+          size="small"
+          variant="contained"
+        >
+          Generate
+        </Button>
       </div>
 
       {isLoading ? (
@@ -219,20 +308,25 @@ const GenerateImage = () => {
               className="rounded img-fluid"
             />
           </div>
-           <button
-            onClick={() => SavingImage(field)}
-            style={{ width: "150px", display: dBlock }}
-            type="button"
-            className="btn btn-success mb-4"
-          >
-            Save To Server
-          </button> 
-          
+{
+  Image?(
+    <Button
+    onClick={() => SavingImage(field)}
+    size="small"
+    variant="contained"
+    color="success"
+  >
+    Save To Server
+  </Button>
+  ):
+  null
+}
+    
+      
         </>
       ) : null}
 
-      {SaveImage?<div>Image Saved</div>:null}
-      
+      {SaveImage ? <div>Image Saved</div> : null}
     </div>
   );
 };
