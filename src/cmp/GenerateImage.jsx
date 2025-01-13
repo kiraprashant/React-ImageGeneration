@@ -35,6 +35,7 @@ const GenerateImage = () => {
         "https://api-inference.huggingface.co/models/stable-diffusion-v1-5/stable-diffusion-v1-5",
       Name: "Stable-diffusion-1.5",
     },
+
   ]);
 
   const [selectedModel, setselectedModel] = useState({
@@ -122,13 +123,13 @@ const GenerateImage = () => {
     .catch((err) => {
       console.log(err);
     });
-try{
-   const getdata = await axios.post("http://localhost:4000/SaveImage",data)
-   console.log(getdata)
-}
-catch(e){
-  console.log(e)
-}
+// try{
+//    const getdata = await axios.post("http://localhost:4000/SaveImage",data)
+//    console.log(getdata)
+// }
+// catch(e){
+//   console.log(e)
+// }
   }
 
   const SavingImage = async () => {
@@ -169,9 +170,11 @@ catch(e){
     }).then((res)=>{
        console.log(res)
        FormdataCloud.append("ImagePath",res.data.url)
+       const UserData = localStorage.getItem("User")
+       const ParseData = JSON.parse(UserData)
        const data = {
-        Username:"prashant",
-        Email:"prashantnair@gmail.com",
+        Username:ParseData.Name,
+        Email:ParseData.Email,
         ImagePath:res.data.url,
         Model:selectedModel.Name,
         Prompt:field
@@ -207,7 +210,14 @@ catch(e){
   };
 
   return (
-    <div className="container">
+    <div 
+    style={{
+      width:"100vw",
+      background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+      minHeight:"100vh"
+    }}
+    >
+    <div className="container" style={{paddingTop:"100px"}}>
       <Typography variant="h3">
         Image Generation
       </Typography>
@@ -229,15 +239,7 @@ catch(e){
         style={{ display: "flex", flexDirection: "column" }}
         className="mb-4"
       >
-        {/* <select
-          className="mb-1 form-control"
-          // value={selectedModel.modelid}
-          onChange={(e) => handlechange(e)}
-        >
-          {selectModel.map((elem) => (
-            <option value={elem.modelid}>{elem.Name}</option>
-          ))}
-        </select> */}
+
         <FormControl fullWidth>
           <InputLabel id="demo-simple-model-select-label">Model</InputLabel>
           <Select
@@ -255,18 +257,11 @@ catch(e){
         </FormControl>
       </div>
       <div style={{ justifyContent: "space-between" }} className="mb-4">
-        {/* <input
-          style={{ width: "85%" }}
-          className="form-control"
-          type="text"
-          value={field}
-          onChange={(e) => setfield(e.target.value)}
-          placeholder="give me prompt to generate the image"
-        /> */}
         <TextField
           fullWidth
           label="Prompt"
           id="fullWidth"
+          multiline
           value={field}
           size="small"
           onChange={(e) => setfield(e.target.value)}
@@ -291,9 +286,11 @@ catch(e){
       </div>
 
       {isLoading ? (
-        <SkeletonTheme>
-          <Skeleton width={"420px"} height={"420px"} count={1} />
+        <div style={{paddingBottom:"20px"}}>
+        <SkeletonTheme style={{paddingBottom:"20px"}}>
+          <Skeleton style={{paddingBottom:"20px"}} width={"420px"} height={"420px"} count={1} />
         </SkeletonTheme>
+        </div>
       ) : null}
 
       {!isLoading ? (
@@ -315,6 +312,7 @@ catch(e){
     size="small"
     variant="contained"
     color="success"
+    style={{display:SaveImage?"none":"null"}}
   >
     Save To Server
   </Button>
@@ -328,7 +326,10 @@ catch(e){
 
       {SaveImage ? <div>Image Saved</div> : null}
     </div>
+    </div>
   );
 };
 
 export default GenerateImage;
+
+//beautiful hero section where specific for ai genereation image also have i mage while men and women enjoying using ai generative image 

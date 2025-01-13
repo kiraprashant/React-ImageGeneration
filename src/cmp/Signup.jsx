@@ -47,12 +47,13 @@ function Signup() {
   
   };
   return (
+
     <Box
       style={{
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        height: "calc(100vh - 80px)",
+        minHeight: "100vh",
         width: "100vw",
       }}
     >
